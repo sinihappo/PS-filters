@@ -19,10 +19,9 @@ def usage(utyp, *msg):
     sys.exit(1)
 
 class SE(object):
-    def __init__(self,prefix,suffix,next):
+    def __init__(self,prefix,suffix):
         self.prefix = prefix
         self.suffix = suffix
-        self.next = next
 
 class LZW(object):
     EOD = 257
@@ -34,7 +33,7 @@ class LZW(object):
     def initialize(self):
         self.pd = {}
         for i in range(256):
-            self.stra[i] = SE(None,i,None)
+            self.stra[i] = SE(None,i)
             self.pd[(None,i)] = i
         self.nextIndex = self.EOD + 1
         self.codeWidth = 9
@@ -47,17 +46,11 @@ class LZW(object):
         self.lastcode = None
         return
     def findstring(self,prefix,suffix):
-        index = prefix
-        if dbg: dbg.write('findstring %d %d\n' % (prefix,suffix))
-        ndx = self.pd.get((prefix,suffix))
-        if ndx is not None:
-            return ndx
-        return self.None1
+        return self.pd.get((prefix,suffix),self.None1)
         
     def addstring(self,outfile,prefix,suffix):
-        self.stra[self.nextIndex] = SE(prefix,suffix,self.stra[prefix].next)
+        self.stra[self.nextIndex] = SE(prefix,suffix)
         self.pd[(prefix,suffix)] = self.nextIndex
-        self.stra[prefix].next = self.nextIndex
         self.nextIndex += 1
         if self.nextIndex >> self.codeWidth:
             self.codeWidth += 1
@@ -67,7 +60,7 @@ class LZW(object):
         return
         
     def sendcode(self,outfile,theCode):
-        self.acc += theCode << (32 - self.codeWidth - self.bitsInAcc)
+        self.acc |= theCode << (32 - self.codeWidth - self.bitsInAcc)
         self.bitsInAcc += self.codeWidth
         while self.bitsInAcc >= 8:
             outfile.write(bytes((self.acc >> 24,)))
@@ -94,26 +87,22 @@ class LZW(object):
 
     def compress(self,infile,outfile):
         self.sendcode(outfile,self.CLR)
-        for code in self.readcodes(infile):
-            if self.lastcode is None:
-                self.lastcode = code
-                if not self.lastcode:
-                    break
-                continue
 
-            thiscode = code
-            if not thiscode:
-                break
+        rcodes = self.readcodes(infile)
+        if self.lastcode is None:
+            self.lastcode = next(rcodes)
 
-            ff = self.findstring(self.lastcode,thiscode)
-            if ff is not self.None1:
+        for thiscode in rcodes:
+            # ff = self.findstring(self.lastcode,thiscode)
+            try:
+                ff = self.pd[(self.lastcode,thiscode)]
                 self.lastcode = ff
-            else:
+            except KeyError:
                 self.sendcode(outfile,self.lastcode)
                 self.addstring(outfile,self.lastcode,thiscode)
                 self.lastcode = thiscode
             
-        if self.lastcode:
+        if self.lastcode is not None:
             self.sendcode(outfile,self.lastcode)
         self.lastcode = None
         self.sendcode(outfile,self.EOD)
