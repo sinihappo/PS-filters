@@ -9,6 +9,9 @@ from itertools import count,cycle
 dbg = None
 # dbg = sys.stderr
 
+def t1():
+    return
+
 def usage(utyp, *msg):
     sys.stderr.write('Usage: %s\n' % os.path.split(sys.argv[0])[1])
     if msg:
@@ -48,8 +51,10 @@ class LZW(object):
     MaxWidth = 12
 
     def initialize(self):
+        self.pd = {}
         for i in range(256):
             self.stra[i] = SE(None,i,None)
+            self.pd[(None,i)] = i
         self.nextIndex = self.EOD + 1
         self.codeWidth = 9
 
@@ -63,10 +68,13 @@ class LZW(object):
     def findstring(self,prefix,suffix):
         index = prefix
         if dbg: dbg.write('findstring %d %d\n' % (prefix,suffix))
+        ndx = self.pd.get((prefix,suffix))
+        if ndx is not None:
+            return ndx
+        return self.None1
         while index is not None:
             if dbg: dbg.write('findstring index %d\n' % (index))
-            if (self.stra[index].prefix == prefix and
-                    self.stra[index].suffix == suffix):
+            if ((self.stra[index].prefix,self.stra[index].suffix) == (prefix,suffix)):
                 return index
             else:
                 index = self.stra[index].next
@@ -74,6 +82,7 @@ class LZW(object):
         
     def addstring(self,outfile,prefix,suffix):
         self.stra[self.nextIndex] = SE(prefix,suffix,self.stra[prefix].next)
+        self.pd[(prefix,suffix)] = self.nextIndex
         self.stra[prefix].next = self.nextIndex
         self.nextIndex += 1
         if self.nextIndex >> self.codeWidth:
@@ -101,15 +110,24 @@ class LZW(object):
             return None
         return d[0]
 
+    def readcodes(self,infile):
+        while True:
+            d = infile.read(1024)
+            if not d:
+                return
+            for c in d:
+                yield c
+
     def compress(self,infile,outfile):
         self.sendcode(outfile,self.CLR)
-        while True:
+        for code in self.readcodes(infile):
             if self.lastcode is None:
-                self.lastcode = self.readcode(infile)
+                self.lastcode = code
                 if not self.lastcode:
                     break
+                continue
 
-            thiscode = self.readcode(infile)
+            thiscode = code
             if not thiscode:
                 break
 
