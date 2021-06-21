@@ -18,11 +18,6 @@ def usage(utyp, *msg):
         sys.stderr.write('Error: %s\n' % (repr(msg),))
     sys.exit(1)
 
-class SE(object):
-    def __init__(self,prefix,suffix):
-        self.prefix = prefix
-        self.suffix = suffix
-
 class LZW(object):
     EOD = 257
     CLR = 256
@@ -33,13 +28,11 @@ class LZW(object):
     def initialize(self):
         self.pd = {}
         for i in range(256):
-            self.stra[i] = SE(None,i)
             self.pd[(None,i)] = i
         self.nextIndex = self.EOD + 1
         self.codeWidth = 9
 
     def __init__(self):
-        self.stra = [None] * (2**self.MaxWidth)
         self.acc = 0
         self.bitsInAcc = 0
         self.initialize()
@@ -49,7 +42,6 @@ class LZW(object):
         return self.pd.get((prefix,suffix),self.None1)
         
     def addstring(self,outfile,prefix,suffix):
-        self.stra[self.nextIndex] = SE(prefix,suffix)
         self.pd[(prefix,suffix)] = self.nextIndex
         self.nextIndex += 1
         if self.nextIndex >> self.codeWidth:
