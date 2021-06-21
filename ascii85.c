@@ -6,10 +6,14 @@ long divarray[5] = { (long) 1, (long) 85, (long) 7225, (long) 614125,
 						   (long) 52200625 };
 	 
 #include <stdio.h>
+#include <unistd.h>
 
 int	vflag;
 int	hflag;
 
+extern void EncodeFile(void);
+
+int
 main(argc,argv)
 
 int argc;
@@ -37,6 +41,7 @@ char **argv;
 
 #define myputc(c,f,counter,maxcounter) (putc(c,f), (counter)++, ((counter) >= (maxcounter)) ? (putc('\n',f),counter=0) : 0)
 
+void
 EncodeFile()
 {
   unsigned long base256 = 0;
@@ -81,7 +86,7 @@ EncodeFile()
       if((inbytes & 0x0000FFFF) == 0x0000FFFF)
 	{
 	  if (vflag) {
-	    fprintf(stderr, "\r%d bytes in, %d bytes out", inbytes, outbytes);
+	    fprintf(stderr, "\r%ld bytes in, %ld bytes out", inbytes, outbytes);
 	    fflush(stderr);
 	  }
 	}

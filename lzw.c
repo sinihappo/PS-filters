@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 
 /* Various constants
  */
@@ -129,7 +130,7 @@ int main(int argc, char *argv[])
 	 {
 		  ++incount;
 		  SendCode(EOD);
-  		  return;
+  		  return 0;
 	 }
 	 
 	 while((thisCode = fgetc(stdin)) != EOF)
@@ -207,7 +208,7 @@ void ShowStats()
 	 double comppct;
 	 
 	 comppct = 100.0 * (1.0 - (double) outcount / (double) incount);
-	 fprintf(stderr, "\rCompressing: %d bytes input, %d bytes output, %3.2f%% saved.",
+	 fprintf(stderr, "\rCompressing: %ld bytes input, %ld bytes output, %3.2f%% saved.",
 				incount, outcount, comppct);
 	 fflush(stderr);
 }
