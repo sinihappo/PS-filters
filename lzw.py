@@ -18,25 +18,6 @@ def usage(utyp, *msg):
         sys.stderr.write('Error: %s\n' % (repr(msg),))
     sys.exit(1)
 
-class NWriter(object):
-    def __init__(self,ofile,nchars):
-        self.ofile = ofile
-        self.nchars = nchars
-        self.nn = 0
-        return
-    def write(self,s):
-        while s or self.nn >= self.nchars:
-            if self.nn >= self.nchars:
-                self.ofile.write('\n')
-                self.nn = 0
-            s0,s = s[:self.nchars-self.nn],s[self.nchars-self.nn:]
-            self.ofile.write(s0)
-            self.nn += len(s0)
-    def nl(self):
-        if self.nn:
-            self.ofile.write('\n')
-            self.nn = 0
-
 class SE(object):
     def __init__(self,prefix,suffix,next):
         self.prefix = prefix
@@ -71,13 +52,6 @@ class LZW(object):
         ndx = self.pd.get((prefix,suffix))
         if ndx is not None:
             return ndx
-        return self.None1
-        while index is not None:
-            if dbg: dbg.write('findstring index %d\n' % (index))
-            if ((self.stra[index].prefix,self.stra[index].suffix) == (prefix,suffix)):
-                return index
-            else:
-                index = self.stra[index].next
         return self.None1
         
     def addstring(self,outfile,prefix,suffix):
