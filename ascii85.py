@@ -55,7 +55,7 @@ class Global:
         outfile.write('~>\n')
     def doit(self,args):
         if self.hflag:
-            sys.stdout.buffer.write(b'%!\ncurrentfile /ASCII85Decode filter cvx exec\n')
+            sys.stdout.write('%!\ncurrentfile /ASCII85Decode filter cvx exec\n')
         self.encode(sys.stdin.buffer,sys.stdout)
         return
 
