@@ -1,3 +1,5 @@
 ascii85
 lzw
 *.o
+__pycache__
+Tests
